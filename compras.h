@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 
 typedef struct Carrinho{
@@ -11,7 +13,7 @@ typedef struct Carrinho{
 
 typedef struct Cliente{
     int id;
-    int nota[3];
+    int nota[5];
     Carrinho carrinho;
 
 } Cliente;
@@ -38,3 +40,4 @@ int inserir_na_fila(Fila* fi, Cliente cliente);
 Elemento* atender(Fila* fi);
 void liberar_fila(Fila* fi);
 int simular_atendimento(Fila* fi);
+void simular_dia(Fila* fi);

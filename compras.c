@@ -1,5 +1,5 @@
 #include "compras.h"
-#include <stdio.h>
+#include <stdlib.h>
 
 #define VALOR_BANANA 6
 #define VALOR_ARROZ 12
@@ -18,21 +18,25 @@ void somar_carrinho(Cliente *cliente){
 
 void gerar_dinheiro(Cliente *cliente){
     if(cliente->id % 2 == 0){
-        cliente->nota[0] = 10; 
+        cliente->nota[0] = 100; 
         cliente->nota[1] = 50; 
         cliente->nota[2] = 20; 
+        cliente->nota[3] = 100; 
+        cliente->nota[4] = 50;  
     }
     else{
         cliente->nota[0] = 50;
         cliente->nota[1] = 50;
-        cliente->nota[2] = 10;
+        cliente->nota[2] = 100;
+        cliente->nota[3] = 100;
+        cliente->nota[4] = 2;
     }
     return;
 }
 
 int pagar_conta(Cliente *cliente){
     int conta_corrente = 0;
-    for(int i=0; i<3;i++){
+    for(int i=0; i<5;i++){
         conta_corrente += cliente->nota[i];
     }
 
@@ -49,7 +53,7 @@ Fila * criar_fila(){
     Fila* fi = (Fila*)malloc(sizeof(Fila));
 
     if(fi==NULL){
-        printf("Memória insulficiente");
+        printf("\n[ERRO] Memoria insuficiente para criar a fila.\n");
         exit(0);
     }
     fi->fim = NULL;
@@ -59,9 +63,12 @@ Fila * criar_fila(){
 }
 
 int inserir_na_fila(Fila* fi, Cliente cliente){
-    Elemento* elemento_adicionado = (Elemento*)malloc(sizeof(Elemento));
+    if(fi == NULL){
+        return 0;
+    }
 
-    if(fi == NULL || elemento_adicionado == NULL){
+    Elemento* elemento_adicionado = (Elemento*)malloc(sizeof(Elemento));
+    if(elemento_adicionado == NULL){
         return 0;
     }
 
@@ -116,19 +123,66 @@ int simular_atendimento(Fila* fi){
         return 0;
     }
 
-    Elemento *cliente_atendendo = atender(fi);
+    Elemento *cliente_atendendo;
+    while((cliente_atendendo = atender(fi)) != NULL){
+        printf("\n\n----------------------------------------\n"
+               "       ATENDIMENTO | CLIENTE #%02i\n"
+               "----------------------------------------\n",
+               cliente_atendendo->cliente.id);
+        somar_carrinho(&cliente_atendendo->cliente);
+        printf("Total da compra: R$ %i\n", cliente_atendendo->cliente.carrinho.valor);
+        gerar_dinheiro(&cliente_atendendo->cliente);
+        if(pagar_conta(&cliente_atendendo->cliente)){
+            printf("\n[OK] Pagamento aprovado. Obrigado, cliente %i!\n",
+                   cliente_atendendo->cliente.id);
+        }
+        else{
+            printf("\n[AVISO] Saldo insuficiente. Atendimento encerrado.\n");
+        }
 
+        free(cliente_atendendo);
+    }
+    return 1;
 
-    
-    printf("\n===Iniciando o atendimento do cliente de ID: %i ===\n", cliente_atendendo->cliente.id);
-    somar_carrinho(&cliente_atendendo->cliente);
-    printf("***Total a pagar: %i ***\n", cliente_atendendo->cliente.carrinho.valor);
-    gerar_dinheiro(&cliente_atendendo->cliente);
-    if(pagar_conta(&cliente_atendendo->cliente)){
-        printf("\n!!! ÊXITO - Volte sempre cliente %i!!!\n", cliente_atendendo->cliente.id);
+}
+
+void simular_dia(Fila* fi){
+
+    if(fi == NULL){
+        return;
+    }
+    Cliente bd_clientes[10];
+    for(int i=0; i<10;i++){
+        bd_clientes[i].id = i+1;
+        bd_clientes[i].carrinho.arroz = i+1;
+        bd_clientes[i].carrinho.banana = i+4;
+        bd_clientes[i].carrinho.feijao = i+1;
+        bd_clientes[i].carrinho.leite = i+3;
+        printf("\n\n----------------------------------------\n"
+               "         CLIENTE #%02i | CARRINHO\n"
+               "----------------------------------------\n"
+               "  Bananas : %i\n"
+               "  Arroz   : %i\n"
+               "  Feijao  : %i\n"
+               "  Leite   : %i\n",
+               bd_clientes[i].id,
+               bd_clientes[i].carrinho.banana,
+               bd_clientes[i].carrinho.arroz,
+               bd_clientes[i].carrinho.feijao,
+               bd_clientes[i].carrinho.leite);
+        if(inserir_na_fila(fi, bd_clientes[i])){
+            printf("[OK] Cliente #%i entrou na fila.\n", bd_clientes[i].id);
+        }     
+    }
+    printf("\n\n========================================\n"
+           "   Fila pronta. Iniciando atendimento...\n"
+           "========================================\n");
+    if(simular_atendimento(fi)){
+        printf("\n\n========================================\n"
+               "   Atendimento concluido. Bom trabalho!\n"
+               "========================================\n");
+        return;
     }
 
-    free(cliente_atendendo);
-    return 1;
 
 }
