@@ -10,15 +10,25 @@ typedef struct Carrinho{
 } Carrinho;
 
 typedef struct Cliente{
-    int nota;
+    int id;
+    int nota[3];
     struct Carrinho carrinho;
 
 } Cliente;
 
-
+typedef struct Fila{
+    Elemento* inicio;
+    Elemento* fim;
+} Fila;
 
 typedef struct Elemento{
     Cliente cliente;
     Elemento *prox;
 } Elemento;
 
+void somar_carrinho(Cliente *cliente);
+void gerar_dinheiro(Cliente *cliente);
+int pagar_conta(Cliente *cliente);
+
+
+Elemento ** criar_fila();
