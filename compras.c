@@ -1,4 +1,5 @@
 #include "compras.h"
+#include <stdio.h>
 
 #define VALOR_BANANA 6
 #define VALOR_ARROZ 12
@@ -6,7 +7,7 @@
 #define VALOR_LEITE 7
 
 void somar_carrinho(Cliente *cliente){
-    int valor;
+    int valor = 0;
     valor += cliente->carrinho.arroz * VALOR_ARROZ;
     valor += cliente->carrinho.banana * VALOR_BANANA;
     valor += cliente->carrinho.feijao * VALOR_FEIJAO;
@@ -30,7 +31,7 @@ void gerar_dinheiro(Cliente *cliente){
 }
 
 int pagar_conta(Cliente *cliente){
-    int conta_corrente;
+    int conta_corrente = 0;
     for(int i=0; i<3;i++){
         conta_corrente += cliente->nota[i];
     }
@@ -78,31 +79,56 @@ int inserir_na_fila(Fila* fi, Cliente cliente){
     return 1; //Êxito
 }
 
-int remover_da_fila(Fila* fi){
+Elemento* atender(Fila* fi){
     if(fi == NULL || fi->inicio == NULL){
-        return 0;
+        return NULL ;
     }
 
     Elemento* aux_inicio = fi->inicio;
     if(aux_inicio == NULL){
-        return 0;
+        return NULL;
     }
 
     fi->inicio = aux_inicio->prox;
-
+    
     if(fi->inicio == NULL){
         fi->fim = NULL;
     }
-    free(aux_inicio);
-
-    return 1;
-
-
-
+    aux_inicio->prox = NULL; // Por segurança
+    return aux_inicio;
 }
 
 void liberar_fila(Fila* fi){
+    
     if(fi!=NULL){
         
+        while(fi->inicio!=NULL){
+            Elemento *no = fi->inicio;
+            fi->inicio = fi->inicio->prox;
+            free(no);
+        }
+        free(fi);
     }
+}
+
+int simular_atendimento(Fila* fi){
+    if(fi == NULL || fi->inicio == NULL){
+        return 0;
+    }
+
+    Elemento *cliente_atendendo = atender(fi);
+
+
+    
+    printf("\n===Iniciando o atendimento do cliente de ID: %i ===\n", cliente_atendendo->cliente.id);
+    somar_carrinho(&cliente_atendendo->cliente);
+    printf("***Total a pagar: %i ***\n", cliente_atendendo->cliente.carrinho.valor);
+    gerar_dinheiro(&cliente_atendendo->cliente);
+    if(pagar_conta(&cliente_atendendo->cliente)){
+        printf("\n!!! ÊXITO - Volte sempre cliente %i!!!\n", cliente_atendendo->cliente.id);
+    }
+
+    free(cliente_atendendo);
+    return 1;
+
 }

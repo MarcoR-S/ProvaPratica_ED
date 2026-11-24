@@ -1,1 +1,1 @@
-Implementar liberar_fila
+corrigir simular_atendimento(Fila* fi)
