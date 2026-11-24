@@ -1,1 +1,0 @@
-corrigir simular_atendimento(Fila* fi)
