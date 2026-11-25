@@ -38,6 +38,7 @@ int pagar_conta(Cliente *cliente);
 Fila* criar_fila();
 int inserir_na_fila(Fila* fi, Cliente cliente);
 Elemento* atender(Fila* fi);
+void liberar_elemento(Elemento* elemento);
 void liberar_fila(Fila* fi);
 int simular_atendimento(Fila* fi);
 void simular_dia(Fila* fi);

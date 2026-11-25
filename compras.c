@@ -105,6 +105,10 @@ Elemento* atender(Fila* fi){
     return aux_inicio;
 }
 
+void liberar_elemento(Elemento* elemento){
+    free(elemento);
+}
+
 void liberar_fila(Fila* fi){
     
     if(fi!=NULL){
@@ -140,7 +144,7 @@ int simular_atendimento(Fila* fi){
             printf("\n[AVISO] Saldo insuficiente. Atendimento encerrado.\n");
         }
 
-        free(cliente_atendendo);
+        liberar_elemento(cliente_atendendo);
     }
     return 1;
 
