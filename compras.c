@@ -18,7 +18,7 @@ void somar_carrinho(Cliente *cliente){
 
 void gerar_dinheiro(Cliente *cliente){
     if(cliente->id % 2 == 0){
-        cliente->nota[0] = 100; 
+        cliente->nota[0] = 10; 
         cliente->nota[1] = 50; 
         cliente->nota[2] = 20; 
         cliente->nota[3] = 100; 
@@ -27,7 +27,7 @@ void gerar_dinheiro(Cliente *cliente){
     else{
         cliente->nota[0] = 50;
         cliente->nota[1] = 50;
-        cliente->nota[2] = 100;
+        cliente->nota[2] = 10;
         cliente->nota[3] = 100;
         cliente->nota[4] = 2;
     }

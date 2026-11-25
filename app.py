@@ -1,8 +1,11 @@
 from flask import Flask, jsonify, render_template
 import ctypes
 import os
+import random
 
 app = Flask(__name__)
+app.config["turnos_trabalhados"] = 0
+app.config["expediente_encerrado"] = False
 
 _lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "libfila.so")
 lib = ctypes.CDLL(_lib_path)
@@ -81,10 +84,10 @@ def _simular_dia():
 		for indice in range(10):
 			cliente = Cliente()
 			cliente.id = indice + 1
-			cliente.carrinho.arroz = indice + 1
-			cliente.carrinho.banana = indice + 4
-			cliente.carrinho.feijao = indice + 1
-			cliente.carrinho.leite = indice + 3
+			cliente.carrinho.arroz = random.randint(1, 5)
+			cliente.carrinho.banana = random.randint(1, 8)
+			cliente.carrinho.feijao = random.randint(1, 4)
+			cliente.carrinho.leite = random.randint(1, 4)
 
 			if not lib.inserir_na_fila(fila, cliente):
 				raise MemoryError("Não foi possível adicionar um cliente à fila.")
@@ -130,6 +133,9 @@ def index():
 
 @app.post("/api/simular")
 def api_simular():
+	if app.config["expediente_encerrado"]:
+		return jsonify({"erro": "O expediente já foi encerrado."}), 409
+
 	try:
 		clientes = _simular_dia()
 	except MemoryError as erro:
@@ -138,15 +144,26 @@ def api_simular():
 		app.logger.exception("Falha ao executar a simulação")
 		return jsonify({"erro": "Não foi possível concluir a simulação."}), 500
 
+	app.config["turnos_trabalhados"] += 1
 	aprovados = [cliente for cliente in clientes if cliente["pagamento_aprovado"]]
 	return jsonify({
 		"clientes": clientes,
+		"turnos_trabalhados": app.config["turnos_trabalhados"],
 		"resumo": {
 			"atendidos": len(clientes),
 			"aprovados": len(aprovados),
 			"recusados": len(clientes) - len(aprovados),
 			"total_vendido": sum(cliente["total"] for cliente in aprovados),
 		},
+	})
+
+
+@app.post("/api/encerrar")
+def api_encerrar():
+	app.config["expediente_encerrado"] = True
+	return jsonify({
+		"encerrado": True,
+		"turnos_trabalhados": app.config["turnos_trabalhados"],
 	})
 
 

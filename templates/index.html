@@ -58,6 +58,7 @@
 
     .open-state { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
     .open-state::before { width: 8px; height: 8px; border-radius: 50%; background: #4a9b68; content: ""; }
+    .open-state.closed::before { background: var(--red); }
 
     .intro {
       display: flex;
@@ -88,6 +89,8 @@
     button:hover { background: var(--green-dark); transform: translateY(-1px); }
     button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
     button:disabled { cursor: wait; opacity: 0.72; transform: none; }
+    button.secondary { border: 1px solid var(--line); color: var(--ink); background: var(--paper); }
+    button.secondary:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
 
     .summary {
       display: grid;
@@ -145,7 +148,7 @@
   <main class="shell">
     <header class="topline">
       <div class="brand"><span class="brand-mark" aria-hidden="true">M</span><span>Mercado da Vila</span></div>
-      <span class="open-state">Caixa principal</span>
+      <span id="shift-state" class="open-state">Expediente aberto · <span id="turns">0 turnos</span></span>
     </header>
 
     <section class="intro" aria-labelledby="page-title">
@@ -154,10 +157,14 @@
         <h1 id="page-title">Atendimento do dia</h1>
         <p class="subtitle">Resumo da fila e dos pagamentos processados.</p>
       </div>
-      <button id="simulate" type="button">Simular atendimento</button>
+      <div class="actions">
+        <button id="simulate" type="button">Simular atendimento</button>
+        <button id="close-shift" class="secondary" type="button">Encerrar atendimento</button>
+      </div>
     </section>
 
     <p id="error" class="error" role="alert" hidden></p>
+    <p id="shift-summary" class="error" role="status" hidden></p>
 
     <section class="summary" aria-label="Resumo do atendimento" aria-live="polite">
       <div class="metric"><span class="metric-label">Clientes atendidos</span><strong id="served" class="metric-value">—</strong></div>
@@ -185,6 +192,7 @@
 
   <script>
     const button = document.querySelector("#simulate");
+    const closeButton = document.querySelector("#close-shift");
     const errorBox = document.querySelector("#error");
     const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -198,6 +206,7 @@
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.erro || "Falha ao simular o atendimento.");
 
+        document.querySelector("#turns").textContent = `${payload.turnos_trabalhados} ${payload.turnos_trabalhados === 1 ? "turno" : "turnos"}`;
         document.querySelector("#served").textContent = payload.resumo.atendidos;
         document.querySelector("#approved").textContent = payload.resumo.aprovados;
         document.querySelector("#declined").textContent = payload.resumo.recusados;
@@ -224,6 +233,31 @@
       } finally {
         button.disabled = false;
         button.textContent = "Simular atendimento";
+      }
+    });
+
+    closeButton.addEventListener("click", async () => {
+      if (!window.confirm("Encerrar o atendimento? Não será possível iniciar novos turnos.")) return;
+
+      closeButton.disabled = true;
+      errorBox.hidden = true;
+      try {
+        const response = await fetch("/api/encerrar", { method: "POST" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.erro || "Falha ao encerrar o atendimento.");
+
+        const shiftState = document.querySelector("#shift-state");
+        shiftState.classList.add("closed");
+        shiftState.firstChild.textContent = "Expediente encerrado · ";
+        document.querySelector("#turns").textContent = `${payload.turnos_trabalhados} ${payload.turnos_trabalhados === 1 ? "turno trabalhado" : "turnos trabalhados"}`;
+        document.querySelector("#shift-summary").textContent = `Atendimento encerrado. Você trabalhou ${payload.turnos_trabalhados} ${payload.turnos_trabalhados === 1 ? "turno" : "turnos"}.`;
+        document.querySelector("#shift-summary").hidden = false;
+        button.disabled = true;
+        closeButton.hidden = true;
+      } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.hidden = false;
+        closeButton.disabled = false;
       }
     });
   </script>
