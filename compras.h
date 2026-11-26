@@ -33,7 +33,7 @@ typedef struct Fila{
 void somar_carrinho(Cliente *cliente);
 void gerar_dinheiro(Cliente *cliente);
 int pagar_conta(Cliente *cliente);
-
+int adicionar_comida(Cliente *cliente);
 
 Fila* criar_fila();
 int inserir_na_fila(Fila* fi, Cliente cliente);

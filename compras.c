@@ -5,6 +5,7 @@
 #define VALOR_ARROZ 12
 #define VALOR_FEIJAO 10
 #define VALOR_LEITE 7
+#define CUPOM 2026
 
 void somar_carrinho(Cliente *cliente){
     int valor = 0;
@@ -47,6 +48,53 @@ int pagar_conta(Cliente *cliente){
         conta_corrente -= cliente->carrinho.valor;
         return 1;
     }
+}
+
+void adicionar_comida(Cliente *cliente){
+    char escolha;
+    char produto;
+    
+    do{
+        int quantidade, valor;
+        printf("\n\nAdicionar produto ao carrinho: ");
+        printf("[B]anana");
+        printf("[L]eite");
+        printf("[A]rroz");
+        printf("[F]eijao");
+        scanf("\n%c",produto);
+
+        printf("\nQuantidade de %c: ", &produto);
+        scanf("%i", &quantidade);
+
+        switch(produto){
+            case 'b':
+            case 'B':
+                valor = VALOR_BANANA;
+                cliente->carrinho.banana += quantidade;
+                break;
+            case 'l':
+            case 'L':
+                valor = VALOR_LEITE;
+                cliente->carrinho.leite += quantidade;
+                break;
+            case 'A':
+            case 'a':
+                valor = VALOR_ARROZ;
+                cliente->carrinho.arroz += quantidade;
+                break;
+            case 'F':
+            case 'f':
+                valor = VALOR_FEIJAO;
+                cliente->carrinho.feijao = quantidade;
+                break;
+        }
+        cliente->carrinho.valor += quantidade * valor;
+
+        printf("\n\nDeseja continuar adicionando produtos? [Y/N]");
+        scanf("%c", &escolha);
+    }while(escolha == 'Y'|| escolha == 'y');
+    
+    return;
 }
 
 Fila * criar_fila(){
@@ -154,10 +202,9 @@ void simular_dia(Fila* fi){
     Cliente bd_clientes[10];
     for(int i=0; i<10;i++){
         bd_clientes[i].id = i+1;
-        bd_clientes[i].carrinho.arroz = i+1;
-        bd_clientes[i].carrinho.banana = i+4;
-        bd_clientes[i].carrinho.feijao = i+1;
-        bd_clientes[i].carrinho.leite = i+3;
+        bd_clientes[i].carrinho = (Carrinho){0};
+        adicionar_comida(&bd_clientes[i]);
+
         printf("\n\n----------------------------------------\n"
                "         CLIENTE #%02i | CARRINHO\n"
                "----------------------------------------\n"
